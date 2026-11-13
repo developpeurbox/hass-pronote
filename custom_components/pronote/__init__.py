@@ -87,8 +87,11 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def update_listener(hass: HomeAssistant, entry: ConfigEntry):
     """Handle options update."""
-    hass.data[DOMAIN][entry.entry_id]["coordinator"].update_interval = timedelta(
+    coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
+    coordinator.update_interval = timedelta(
         minutes=entry.options.get("refresh_interval", DEFAULT_REFRESH_INTERVAL)
     )
+    # prend en compte tout de suite les jours de grève/blocus modifiés
+    await coordinator.async_request_refresh()
 
     return True

@@ -11,6 +11,7 @@ import logging
 from pronotepy.dataClasses import Period as PronotePeriod
 from .pronote_helper import *
 from .pronote_formatter import *
+from .lesson_stats import aggregate, compact_lesson, parse_disruptions
 import re
 from zoneinfo import ZoneInfo
 from slugify import slugify
@@ -28,6 +29,7 @@ from homeassistant.helpers.update_coordinator import (
 from .const import (
     LESSON_MAX_DAYS,
     LESSON_NEXT_DAY_SEARCH_LIMIT,
+    LESSON_STATS_BACKFILL_WEEKS,
     HOMEWORK_MAX_DAYS,
     INFO_SURVEY_LIMIT_MAX_DAYS,
     EVENT_TYPE,
@@ -159,6 +161,9 @@ class PronoteDataUpdateCoordinator(TimestampDataUpdateCoordinator):
             ),
         )
         self.config_entry = entry
+        # semaine (n° Pronote) -> cours compactés, pour ne pas re-télécharger l'historique
+        self._stats_cache: dict[int, list] = {}
+        self._stats_start_day = None
 
     async def _async_update_data(self) -> dict[Platform, dict[str, Any]]:
         previous_data = None if self.data is None else self.data.copy()
@@ -184,6 +189,7 @@ class PronoteDataUpdateCoordinator(TimestampDataUpdateCoordinator):
             "lessons_tomorrow": [],
             "lessons_next_day": [],
             "lessons_period": [],
+            "lessons_stats": None,
             "ical_url": None,
             "grades": [],
             "averages": [],
@@ -333,6 +339,15 @@ class PronoteDataUpdateCoordinator(TimestampDataUpdateCoordinator):
             if lessons_period is not None
             else None
         )
+
+        # Statistiques sur toute l'année (cours annulés, prof absent... par matière)
+        try:
+            self.data["lessons_stats"] = await self.hass.async_add_executor_job(
+                self._compute_lessons_stats, client, today
+            )
+        except Exception as ex:
+            self.data["lessons_stats"] = None
+            _LOGGER.info("Error computing lessons_stats from pronote: %s", ex)
 
         if (
                 self.data["lessons_tomorrow"] is not None
@@ -611,6 +626,60 @@ class PronoteDataUpdateCoordinator(TimestampDataUpdateCoordinator):
             _strip_client_refs(value)
 
         return self.data
+
+    def _compute_lessons_stats(self, client, today):
+        """Cours de toute l'année scolaire, semaine par semaine (exécuté dans un executor).
+
+        Les semaines passées sont mises en cache une fois "réglées" ; seules les
+        semaines récentes/à venir sont retéléchargées à chaque rafraîchissement.
+        L'historique manquant est rattrapé par lots pour rester sous UPDATE_TIMEOUT.
+        """
+        start_day = getattr(client, "start_day", None)
+        if start_day is None:
+            return None
+        if self._stats_start_day != start_day:  # nouvelle année scolaire
+            self._stats_cache = {}
+            self._stats_start_day = start_day
+
+        end = today + timedelta(days=LESSON_MAX_DAYS)
+        last_week = 1 + (end - start_day).days // 7
+        if last_week < 1:
+            return None
+        weeks = list(range(1, last_week + 1))
+
+        def monday(week):
+            return start_day + timedelta(days=7 * (week - 1))
+
+        settled_before = today - timedelta(days=7)
+        recent = [w for w in weeks if monday(w) + timedelta(days=6) >= settled_before]
+        missing = [w for w in weeks if w not in recent and w not in self._stats_cache]
+
+        for week in recent + missing[:LESSON_STATS_BACKFILL_WEEKS]:
+            try:
+                lessons = client.lessons(monday(week), monday(week) + timedelta(days=6))
+                self._stats_cache[week] = [compact_lesson(lesson) for lesson in lessons]
+            except Exception as ex:
+                _LOGGER.info("Error getting lessons of week %s for stats: %s", week, ex)
+
+        loaded = [w for w in weeks if w in self._stats_cache]
+        windows, ignored = parse_disruptions(
+            self.config_entry.options.get("jours_perturbes", ""), start_day
+        )
+        stats = aggregate(
+            (record for week in loaded for record in self._stats_cache[week]),
+            windows,
+        )
+        stats.update(
+            {
+                "du": start_day.isoformat(),
+                "au": end.isoformat(),
+                "semaines_chargees": len(loaded),
+                "semaines_total": len(weeks),
+                "complet": len(loaded) == len(weeks),
+                "lignes_ignorees": ignored,
+            }
+        )
+        return stats
 
     def compare_data(
             self, previous_data, data_key, compare_keys, event_type, format_func

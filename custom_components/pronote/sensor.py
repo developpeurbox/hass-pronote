@@ -75,6 +75,7 @@ async def async_setup_entry(
             coordinator, key="lessons_period", name="Period's timetable",
             translation_key="lessons_period",
         ),
+        PronoteLessonsStatsSensor(coordinator),
         PronoteHomeworkSensor(
             coordinator, key="homework", name="Homework",
             translation_key="homework",
@@ -483,6 +484,45 @@ class PronoteTimetableSensor(PronoteGenericSensor):
             result["lunch_break_end_at"] = self._lunch_break_end_at
 
         return result
+
+
+class PronoteLessonsStatsSensor(PronoteGenericSensor):
+    """Cours non tenus (annulés, prof absent, grève, blocus...) sur l'année, par matière."""
+
+    _unrecorded_attributes = frozenset({"matieres"})
+
+    def __init__(self, coordinator: PronoteDataUpdateCoordinator) -> None:
+        super().__init__(
+            coordinator,
+            "lessons_stats",
+            "Lessons statistics",
+            translation_key="lessons_stats",
+        )
+
+    @property
+    def native_value(self):
+        """Nombre total de cours non tenus depuis la rentrée."""
+        stats = self.coordinator.data.get("lessons_stats")
+        if stats is None:
+            return "unavailable"
+        return stats["totaux"]["perdus"]
+
+    @property
+    def extra_state_attributes(self):
+        stats = self.coordinator.data.get("lessons_stats") or {}
+        return super().extra_state_attributes | {
+            "updated_at": self.coordinator.last_update_success_time,
+            "du": stats.get("du"),
+            "au": stats.get("au"),
+            "semaines_chargees": stats.get("semaines_chargees"),
+            "semaines_total": stats.get("semaines_total"),
+            "complet": stats.get("complet"),
+            "totaux": stats.get("totaux"),
+            "perturbations": stats.get("perturbations"),
+            "lignes_ignorees": stats.get("lignes_ignorees"),
+            "statuts": stats.get("statuts"),
+            "matieres": stats.get("matieres"),
+        }
 
 
 class PronoteGradesSensor(PronotePeriodRelatedSensor):

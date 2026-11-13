@@ -16,6 +16,7 @@
       "lessons_tomorrow": { "default": "mdi:timetable" },
       "lessons_next_day": { "default": "mdi:timetable" },
       "lessons_period": { "default": "mdi:timetable" },
+      "lessons_stats": { "default": "mdi:calendar-remove" },
       "homework": { "default": "mdi:notebook-edit-outline" },
       "homework_period": { "default": "mdi:notebook-edit-outline" },
       "grades": { "default": "mdi:school-outline" },

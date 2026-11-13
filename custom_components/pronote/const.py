@@ -7,6 +7,8 @@ EVENT_TYPE = "pronote_event"
 
 LESSON_MAX_DAYS = 15
 LESSON_NEXT_DAY_SEARCH_LIMIT = 30
+# Statistiques annuelles : semaines d'historique chargées au maximum par rafraîchissement
+LESSON_STATS_BACKFILL_WEEKS = 12
 HOMEWORK_MAX_DAYS = 15
 
 GRADES_TO_DISPLAY = 11
