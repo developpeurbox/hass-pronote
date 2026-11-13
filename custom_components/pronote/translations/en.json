@@ -7,8 +7,7 @@
         "error": {
             "cannot_connect": "Failed to connect",
             "invalid_auth": "Invalid authentication",
-            "unknown": "Unexpected error",
-            "https_required": "Scanning needs Home Assistant to be accessed over HTTPS. Otherwise, use the QR code option and paste the JSON content."
+            "unknown": "Unexpected error"
         },
         "step": {
             "parent": {
@@ -21,95 +20,7 @@
                     "qr_code_json": "JSON version of QR",
                     "qr_code_pin": "Pin code"
                 },
-                "sections": {
-                    "double_auth": {
-                        "name": "Double authentication",
-                        "description": "Only if your school uses double authentication (Pronote asks for a PIN when you log in from a new device). Leave empty otherwise.",
-                        "data": {
-                            "device_name": "Device name",
-                            "account_pin": "Account PIN"
-                        },
-                        "data_description": {
-                            "device_name": "Name Home Assistant gets in your Pronote trusted devices",
-                            "account_pin": "The PIN Pronote asks for on a new device"
-                        }
-                    }
-                },
-                "description": "Paste the QR code JSON"
-            },
-            "qr_scan": {
-                "title": "Scan the QR code",
-                "description": "[Open the scan page]({url}), allow the camera and aim at the QR code shown by Pronote."
-            },
-            "qr_scan_pin": {
-                "title": "QR code PIN",
-                "description": "QR code read. Enter the PIN chosen when creating the QR code.",
-                "data": {
-                    "qr_code_pin": "PIN used when creating the QR code"
-                },
-                "sections": {
-                    "double_auth": {
-                        "name": "Double authentication",
-                        "description": "Only if your school uses double authentication (Pronote asks for a PIN when you log in from a new device). Leave empty otherwise.",
-                        "data": {
-                            "device_name": "Device name",
-                            "account_pin": "Account PIN"
-                        },
-                        "data_description": {
-                            "device_name": "Name Home Assistant gets in your Pronote trusted devices",
-                            "account_pin": "The PIN Pronote asks for on a new device"
-                        }
-                    }
-                }
-            },
-            "qr_scan_failed": {
-                "title": "Connection refused",
-                "description": "Pronote refused the connection: the PIN is wrong or the QR code has expired (it is only valid for a few minutes).",
-                "menu_options": {
-                    "qr_scan_pin": "Retype the PIN",
-                    "qr_scan": "Scan a new QR code"
-                }
-            },
-            "reauth_menu": {
-                "title": "Re-authentication",
-                "description": "Pronote credentials for {name} are no longer valid. How do you want to give the new QR code?",
-                "menu_options": {
-                    "reauth_confirm": "Paste the QR code JSON",
-                    "reauth_scan": "Experimental: scan QR code from your phone"
-                }
-            },
-            "reauth_scan": {
-                "title": "Scan the new QR code",
-                "description": "[Open the scan page]({url}), allow the camera and aim at the new QR code shown by Pronote."
-            },
-            "reauth_scan_pin": {
-                "title": "QR code PIN",
-                "description": "QR code read. Enter the PIN chosen when creating the QR code.",
-                "data": {
-                    "qr_code_pin": "PIN used when creating the QR code"
-                },
-                "sections": {
-                    "double_auth": {
-                        "name": "Double authentication",
-                        "description": "Only if your school uses double authentication (Pronote asks for a PIN when you log in from a new device). Leave empty otherwise.",
-                        "data": {
-                            "device_name": "Device name",
-                            "account_pin": "Account PIN"
-                        },
-                        "data_description": {
-                            "device_name": "Name Home Assistant gets in your Pronote trusted devices",
-                            "account_pin": "The PIN Pronote asks for on a new device"
-                        }
-                    }
-                }
-            },
-            "reauth_scan_failed": {
-                "title": "Connection refused",
-                "description": "Pronote refused the connection: the PIN is wrong or the QR code has expired (it is only valid for a few minutes).",
-                "menu_options": {
-                    "reauth_scan_pin": "Retype the PIN",
-                    "reauth_scan": "Scan a new QR code"
-                }
+                "description": "JSON of QR Code"
             },
             "reauth_confirm": {
                 "title": "Re-authenticate",
@@ -119,22 +30,10 @@
                     "username": "Username",
                     "password": "Password",
                     "ent": "Ent",
+                    "device_name": "Device name",
+                    "account_pin": "Account PIN",
                     "qr_code_json": "JSON version of QR",
                     "qr_code_pin": "Pin code"
-                },
-                "sections": {
-                    "double_auth": {
-                        "name": "Double authentication",
-                        "description": "Only if your school uses double authentication (Pronote asks for a PIN when you log in from a new device). Leave empty otherwise.",
-                        "data": {
-                            "device_name": "Device name",
-                            "account_pin": "Account PIN"
-                        },
-                        "data_description": {
-                            "device_name": "Name Home Assistant gets in your Pronote trusted devices",
-                            "account_pin": "The PIN Pronote asks for on a new device"
-                        }
-                    }
                 }
             },
             "user": {
@@ -148,37 +47,10 @@
                     "ent": "Ent",
                     "password": "Password",
                     "url": "URL",
-                    "username": "Username"
-                },
-                "sections": {
-                    "double_auth": {
-                        "name": "Double authentication",
-                        "description": "Only if your school uses double authentication (Pronote asks for a PIN when you log in from a new device). Leave empty otherwise.",
-                        "data": {
-                            "device_name": "Device name",
-                            "account_pin": "Account PIN"
-                        },
-                        "data_description": {
-                            "device_name": "Name Home Assistant gets in your Pronote trusted devices",
-                            "account_pin": "The PIN Pronote asks for on a new device"
-                        }
-                    }
+                    "username": "Username",
+                    "device_name": "Device name",
+                    "account_pin": "Account PIN"
                 }
-            }
-        }
-    },
-    "selector": {
-        "connection_type": {
-            "options": {
-                "username_password": "Username and password",
-                "qrcode": "QR code",
-                "qrcode_scan": "Experimental: scan the QR code from your phone"
-            }
-        },
-        "account_type": {
-            "options": {
-                "eleve": "Student",
-                "parent": "Parent"
             }
         }
     },
@@ -190,7 +62,8 @@
                     "nickname": "Define a nickname for your child",
                     "refresh_interval": "Data refresh interval (in minutes)",
                     "lunch_break_time": "Lunch break threshold time (HH:MM)",
-                    "alarm_offset": "Time delta for alarm (in minutes, before first lesson of the day)"
+                    "alarm_offset": "Time delta for alarm (in minutes, before first lesson of the day)",
+                    "jours_perturbes": "Strike / blockade days (one per line: 04/11, 12/10 au 16/10, 10/11 matin 8-13, 09/11 après-midi 13-18)"
                 }
             }
         }
@@ -212,6 +85,7 @@
             "lessons_tomorrow": { "name": "Tomorrow's timetable" },
             "lessons_next_day": { "name": "Next day's timetable" },
             "lessons_period": { "name": "Period's timetable" },
+            "lessons_stats": { "name": "Lessons statistics" },
             "homework": { "name": "Homework" },
             "homework_period": { "name": "Period's homework" },
             "grades": { "name": "Grades" },

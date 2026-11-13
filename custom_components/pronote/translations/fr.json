@@ -7,8 +7,7 @@
         "error": {
             "cannot_connect": "Impossible de se connecter",
             "invalid_auth": "Erreur d'authentification",
-            "unknown": "Une erreur est survenue",
-            "https_required": "Le scan nécessite d'accéder à Home Assistant en HTTPS. Sinon, utilisez l'option QR code et collez le contenu JSON."
+            "unknown": "Une erreur est survenue"
         },
         "step": {
             "parent": {
@@ -18,30 +17,18 @@
             },
             "user": {
                 "data": {
-                    "account_type": "Type de compte",
-                    "connection_type": "Type de connexion"
+                    "connection_type": "Type de connection"
                 }
             },
             "username_password_login": {
                 "data": {
+                    "account_type": "Type de compte",
                     "ent": "ENT",
                     "password": "Mot de passe",
                     "url": "URL",
-                    "username": "Identifiant"
-                },
-                "sections": {
-                    "double_auth": {
-                        "name": "Double authentification",
-                        "description": "Utile uniquement si l'établissement a activé la double authentification (Pronote demande un code PIN quand vous vous connectez depuis un nouvel appareil). Sinon, laissez vide.",
-                        "data": {
-                            "device_name": "Nom de l'appareil",
-                            "account_pin": "PIN du compte"
-                        },
-                        "data_description": {
-                            "device_name": "Nom sous lequel Home Assistant apparaîtra dans vos appareils de confiance Pronote",
-                            "account_pin": "Le code PIN que Pronote demande sur un nouvel appareil"
-                        }
-                    }
+                    "username": "Identifiant",
+                    "device_name": "Nom de l'appareil",
+                    "account_pin": "PIN du compte"
                 }
             },
             "qr_code_login": {
@@ -49,95 +36,7 @@
                     "qr_code_json": "JSON du QR Code",
                     "qr_code_pin": "PIN utilisé en créant le QR Code"
                 },
-                "sections": {
-                    "double_auth": {
-                        "name": "Double authentification",
-                        "description": "Utile uniquement si l'établissement a activé la double authentification (Pronote demande un code PIN quand vous vous connectez depuis un nouvel appareil). Sinon, laissez vide.",
-                        "data": {
-                            "device_name": "Nom de l'appareil",
-                            "account_pin": "PIN du compte"
-                        },
-                        "data_description": {
-                            "device_name": "Nom sous lequel Home Assistant apparaîtra dans vos appareils de confiance Pronote",
-                            "account_pin": "Le code PIN que Pronote demande sur un nouvel appareil"
-                        }
-                    }
-                },
-                "description": "Collez le JSON du QR code"
-            },
-            "qr_scan": {
-                "title": "Scanner le QR code",
-                "description": "[Ouvrir la page de scan]({url}), autorisez la caméra et visez le QR code affiché par Pronote."
-            },
-            "qr_scan_pin": {
-                "title": "PIN du QR code",
-                "description": "QR code lu. Saisissez le PIN choisi en créant le QR code.",
-                "data": {
-                    "qr_code_pin": "PIN utilisé en créant le QR Code"
-                },
-                "sections": {
-                    "double_auth": {
-                        "name": "Double authentification",
-                        "description": "Utile uniquement si l'établissement a activé la double authentification (Pronote demande un code PIN quand vous vous connectez depuis un nouvel appareil). Sinon, laissez vide.",
-                        "data": {
-                            "device_name": "Nom de l'appareil",
-                            "account_pin": "PIN du compte"
-                        },
-                        "data_description": {
-                            "device_name": "Nom sous lequel Home Assistant apparaîtra dans vos appareils de confiance Pronote",
-                            "account_pin": "Le code PIN que Pronote demande sur un nouvel appareil"
-                        }
-                    }
-                }
-            },
-            "qr_scan_failed": {
-                "title": "Connexion refusée",
-                "description": "Pronote a refusé la connexion : le PIN est faux ou le QR code a expiré (il n'est valable que quelques minutes).",
-                "menu_options": {
-                    "qr_scan_pin": "Ressaisir le PIN",
-                    "qr_scan": "Scanner un nouveau QR code"
-                }
-            },
-            "reauth_menu": {
-                "title": "Réauthentification",
-                "description": "Les identifiants Pronote de {name} ne sont plus valides. Comment voulez-vous fournir le nouveau QR code ?",
-                "menu_options": {
-                    "reauth_confirm": "Coller le JSON du QR code",
-                    "reauth_scan": "Expérimental : scanner le QR code depuis votre téléphone"
-                }
-            },
-            "reauth_scan": {
-                "title": "Scanner le nouveau QR code",
-                "description": "[Ouvrir la page de scan]({url}), autorisez la caméra et visez le nouveau QR code affiché par Pronote."
-            },
-            "reauth_scan_pin": {
-                "title": "PIN du QR code",
-                "description": "QR code lu. Saisissez le PIN choisi en créant le QR code.",
-                "data": {
-                    "qr_code_pin": "PIN utilisé en créant le QR Code"
-                },
-                "sections": {
-                    "double_auth": {
-                        "name": "Double authentification",
-                        "description": "Utile uniquement si l'établissement a activé la double authentification (Pronote demande un code PIN quand vous vous connectez depuis un nouvel appareil). Sinon, laissez vide.",
-                        "data": {
-                            "device_name": "Nom de l'appareil",
-                            "account_pin": "PIN du compte"
-                        },
-                        "data_description": {
-                            "device_name": "Nom sous lequel Home Assistant apparaîtra dans vos appareils de confiance Pronote",
-                            "account_pin": "Le code PIN que Pronote demande sur un nouvel appareil"
-                        }
-                    }
-                }
-            },
-            "reauth_scan_failed": {
-                "title": "Connexion refusée",
-                "description": "Pronote a refusé la connexion : le PIN est faux ou le QR code a expiré (il n'est valable que quelques minutes).",
-                "menu_options": {
-                    "reauth_scan_pin": "Ressaisir le PIN",
-                    "reauth_scan": "Scanner un nouveau QR code"
-                }
+                "description": "JSON du QR Code"
             },
             "reauth_confirm": {
                 "title": "Réauthentification",
@@ -147,38 +46,11 @@
                     "username": "Identifiant",
                     "password": "Mot de passe",
                     "ent": "ENT",
+                    "device_name": "Nom de l'appareil",
+                    "account_pin": "PIN du compte",
                     "qr_code_json": "JSON du QR Code",
                     "qr_code_pin": "PIN utilisé en créant le QR Code"
-                },
-                "sections": {
-                    "double_auth": {
-                        "name": "Double authentification",
-                        "description": "Utile uniquement si l'établissement a activé la double authentification (Pronote demande un code PIN quand vous vous connectez depuis un nouvel appareil). Sinon, laissez vide.",
-                        "data": {
-                            "device_name": "Nom de l'appareil",
-                            "account_pin": "PIN du compte"
-                        },
-                        "data_description": {
-                            "device_name": "Nom sous lequel Home Assistant apparaîtra dans vos appareils de confiance Pronote",
-                            "account_pin": "Le code PIN que Pronote demande sur un nouvel appareil"
-                        }
-                    }
                 }
-            }
-        }
-    },
-    "selector": {
-        "connection_type": {
-            "options": {
-                "username_password": "Identifiant et mot de passe",
-                "qrcode": "QR code",
-                "qrcode_scan": "Expérimental : scanner le QR code depuis votre téléphone"
-            }
-        },
-        "account_type": {
-            "options": {
-                "eleve": "Élève",
-                "parent": "Parent"
             }
         }
     },
@@ -190,7 +62,8 @@
                     "nickname": "Définissez un surnom pour votre enfant",
                     "refresh_interval": "Intervale de mise à jour des données (en minutes)",
                     "lunch_break_time": "Heure palier pour le calcul de la pause repas (HH:MM)",
-                    "alarm_offset": "Calcul de l'heure du réveil (en minutes, avant le premier cours du jour)"
+                    "alarm_offset": "Calcul de l'heure du réveil (en minutes, avant le premier cours du jour)",
+                    "jours_perturbes": "Jours de grève / blocus (un par ligne : 04/11, 12/10 au 16/10, 10/11 matin 8-13, 09/11 après-midi 13-18)"
                 }
             }
         }
@@ -212,6 +85,7 @@
             "lessons_tomorrow": { "name": "Emploi du temps de demain" },
             "lessons_next_day": { "name": "Emploi du temps du jour suivant" },
             "lessons_period": { "name": "Emploi du temps de la période" },
+            "lessons_stats": { "name": "Statistiques des cours" },
             "homework": { "name": "Devoirs" },
             "homework_period": { "name": "Devoirs de la période" },
             "grades": { "name": "Notes" },
