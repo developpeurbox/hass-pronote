@@ -1,1 +1,131 @@
+alias: "[Pronote] Mail bilan des cours non tenus"
+description: "Envoie par mail un bilan HTML des cours annulés, profs absents, grèves et blocus (capteurs « Statistiques des cours »)."
+triggers:
+  - trigger: time
+    at: "18:00:00"
+conditions:
+  - condition: time
+    weekday:
+      - fri
+actions:
+  - variables:
+      enfants:
+        - nom: Noa
+          entite: sensor.pronote_XXX_XXX_lessons_statistics
+
+      html: |
+        {% macro n(x) -%}{{ ((x | float(0)) | round(1)) | string | replace('.0', '') | replace('.', ',') }}{%- endmacro %}
+        {% macro d(iso) -%}{{ iso[8:10] ~ '/' ~ iso[5:7] }}{%- endmacro %}
+        {% macro kpi(valeur, libelle, couleur) -%}
+        <td align="center" width="33%" style="padding:6px;">
+          <div style="background:#ffffff;border:1px solid #e3e8ef;border-radius:10px;padding:12px 4px;">
+            <div style="font-size:26px;font-weight:bold;color:{{ couleur }};">{{ valeur }}</div>
+            <div style="font-size:12px;color:#6b7785;">{{ libelle }}</div>
+          </div>
+        </td>
+        {%- endmacro %}
+        {% macro cause(libelle, nb, h, couleur) -%}
+        <td align="center" width="25%" style="padding:3px;">
+          <div style="background:#ffffff;border-top:3px solid {{ couleur }};border-radius:4px;padding:8px 2px;">
+            <div style="font-size:18px;font-weight:bold;color:#1f2d3d;">{{ nb }}</div>
+            <div style="font-size:11px;color:#6b7785;">{{ libelle }}</div>
+            <div style="font-size:11px;color:#9aa5b1;">{{ n(h) }} h</div>
+          </div>
+        </td>
+        {%- endmacro %}
+        <html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body style="margin:0;padding:0;background:#f3f5f9;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f5f9;"><tr><td align="center" style="padding:16px 8px;">
+        <table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;font-family:Arial,Helvetica,sans-serif;color:#1f2d3d;">
+          <tr><td style="background:#1f3a5f;border-radius:12px 12px 0 0;padding:22px 24px;">
+            <div style="font-size:22px;font-weight:bold;color:#ffffff;">🏫 Bilan des cours non tenus</div>
+            <div style="font-size:13px;color:#b9c7dc;margin-top:4px;">Pronote · mis à jour le {{ now().strftime('%d/%m/%Y à %H:%M') }}</div>
+          </td></tr>
+        {% for e in enfants %}
+          {% set t = state_attr(e.entite, 'totaux') %}
+          {% set mat = state_attr(e.entite, 'matieres') %}
+          {% set pert = state_attr(e.entite, 'perturbations') %}
+          {% set ign = state_attr(e.entite, 'lignes_ignorees') %}
+          <tr><td style="background:#eaf0f8;padding:18px 24px 6px 24px;">
+            <div style="font-size:18px;font-weight:bold;color:#1f3a5f;">{{ e.nom }}</div>
+          {% if t is none or mat is none %}
+            <div style="padding:12px 0;color:#b03a2e;">Données indisponibles pour le moment.</div>
+          </td></tr>
+          {% else %}
+            {% set pct = (100 * t.perdus / t.cours) if t.cours > 0 else 0 %}
+            <div style="font-size:12px;color:#6b7785;">Du {{ d(state_attr(e.entite, 'du')) }} au {{ d(state_attr(e.entite, 'au')) }}{% if not state_attr(e.entite, 'complet') %} · <span style="color:#b9770e;">historique en cours de chargement ({{ state_attr(e.entite, 'semaines_chargees') }}/{{ state_attr(e.entite, 'semaines_total') }} semaines)</span>{% endif %}</div>
+          </td></tr>
+          <tr><td style="background:#eaf0f8;padding:6px 18px;">
+            <table width="100%" cellpadding="0" cellspacing="0"><tr>
+              {{ kpi(t.perdus ~ ' / ' ~ t.cours, 'cours non tenus', '#c0392b') }}
+              {{ kpi(n(t.heures_perdues) ~ ' h', 'heures perdues (sur ' ~ n(t.heures) ~ ' h)', '#d35400') }}
+              {{ kpi(n(pct) ~ ' %', 'du temps de cours', '#1f3a5f') }}
+            </tr></table>
+          </td></tr>
+          <tr><td style="background:#eaf0f8;padding:0 21px 8px 21px;">
+            <table width="100%" cellpadding="0" cellspacing="0"><tr>
+              {{ cause('Annulés', t.annules, t.heures_annulees, '#e74c3c') }}
+              {{ cause('Prof absent', t.prof_absent, t.heures_prof_absent, '#e67e22') }}
+              {{ cause('Classe absente', t.classe_absente, t.heures_classe_absente, '#8e44ad') }}
+              {{ cause('Grève / blocus', t.greve_blocus, t.heures_greve_blocus, '#2c3e50') }}
+            </tr></table>
+          </td></tr>
+          <tr><td style="background:#ffffff;padding:14px 24px 6px 24px;border-left:1px solid #e3e8ef;border-right:1px solid #e3e8ef;">
+            <div style="font-size:14px;font-weight:bold;margin-bottom:6px;">Par matière</div>
+            <table width="100%" cellpadding="0" cellspacing="0" style="font-size:13px;">
+              <tr style="color:#6b7785;font-size:11px;text-transform:uppercase;">
+                <td style="padding:4px 0;">Matière</td><td align="center">Perdus</td><td align="center">Heures</td><td width="30%">Part</td>
+              </tr>
+              {% set ns = namespace(sans=0) %}
+              {% for nom, m in mat.items() %}
+                {% if m.perdus > 0 %}
+                  {% set p = (100 * m.perdus / m.cours) if m.cours > 0 else 0 %}
+                  <tr style="border-top:1px solid #eef1f5;">
+                    <td style="padding:7px 0;"><b>{{ nom }}</b>
+                      <div style="font-size:11px;color:#9aa5b1;">
+                        {%- set parts = [] %}
+                        {%- if m.annules %}{% set parts = parts + [m.annules ~ ' annulé' ~ ('s' if m.annules > 1 else '')] %}{% endif %}
+                        {%- if m.prof_absent %}{% set parts = parts + [m.prof_absent ~ ' prof absent'] %}{% endif %}
+                        {%- if m.classe_absente %}{% set parts = parts + [m.classe_absente ~ ' classe absente'] %}{% endif %}
+                        {%- if m.greve_blocus %}{% set parts = parts + [m.greve_blocus ~ ' grève/blocus'] %}{% endif %}
+                        {{ parts | join(' · ') }}
+                      </div></td>
+                    <td align="center" style="color:#c0392b;font-weight:bold;">{{ m.perdus }}<span style="color:#9aa5b1;font-weight:normal;"> / {{ m.cours }}</span></td>
+                    <td align="center">{{ n(m.heures_perdues) }} h</td>
+                    <td>
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background:#eef1f5;border-radius:4px;"><tr>
+                        <td width="{{ [p | round(0) | int, 4] | max }}%" style="background:#e74c3c;border-radius:4px;font-size:8px;line-height:8px;">&nbsp;</td>
+                        <td style="font-size:8px;">&nbsp;</td>
+                      </tr></table>
+                      <div style="font-size:10px;color:#9aa5b1;text-align:right;">{{ n(p) }} %</div>
+                    </td>
+                  </tr>
+                {% else %}
+                  {% set ns.sans = ns.sans + 1 %}
+                {% endif %}
+              {% endfor %}
+            </table>
+            {% if ns.sans > 0 %}<div style="font-size:12px;color:#2e8b57;padding:8px 0;">✅ {{ ns.sans }} matière{{ 's' if ns.sans > 1 }} sans aucun cours perdu</div>{% endif %}
+          </td></tr>
+          {% if pert %}
+          <tr><td style="background:#ffffff;padding:4px 24px 14px 24px;border-left:1px solid #e3e8ef;border-right:1px solid #e3e8ef;">
+            <div style="font-size:12px;color:#6b7785;"><b>Jours de grève / blocus pris en compte :</b>
+              {% for ligne, nb in pert.items() %}{{ ligne }} ({{ nb }} cours){{ ' · ' if not loop.last }}{% endfor %}</div>
+            {% if ign %}<div style="font-size:12px;color:#b03a2e;margin-top:4px;">⚠️ Lignes non comprises : {{ ign | join(' · ') }}</div>{% endif %}
+          </td></tr>
+          {% endif %}
+          <tr><td style="background:#ffffff;height:10px;border-left:1px solid #e3e8ef;border-right:1px solid #e3e8ef;border-bottom:1px solid #e3e8ef;border-radius:0 0 12px 12px;font-size:1px;line-height:10px;">&nbsp;</td></tr>
+          <tr><td style="height:14px;font-size:1px;">&nbsp;</td></tr>
+          {% endif %}
+        {% endfor %}
+          <tr><td align="center" style="font-size:11px;color:#9aa5b1;padding:4px;">Généré par Home Assistant · intégration Pronote</td></tr>
+        </table>
+        </td></tr></table>
+        </body></html>
+  - action: notify.TON_SERVICE_MAIL
+    data:
+      title: "Pronote – bilan des cours non tenus ({{ now().strftime('%d/%m') }})"
+      message: "Ce mail est au format HTML."
+      data:
+        html: "{{ html }}"
+mode: single
 
